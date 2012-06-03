@@ -39,7 +39,7 @@ object ReflectionUtils {
   }
 
   def searchField[A](ob: A, name: String): Field = {
-    ob.getClass().getDeclaredFields().foreach(f => {
+    getFields(ob).foreach(f => {
       if (f.getName() == name) {
         return f
       }
