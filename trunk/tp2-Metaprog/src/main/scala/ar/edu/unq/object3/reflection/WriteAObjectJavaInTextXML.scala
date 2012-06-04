@@ -39,7 +39,7 @@ object WriteAObjectJavaInTextXML {
     file.text = data
   }
 
-  def setFieldObj[A](fields: List[RepObj[A]], ob: Any) {
+  def setterFieldObject[A](fields: List[RepObj[A]], ob: Any) {
     for (f <- fields) {
       ReflectionUtils.setFieldValue(ob, f.property, f.value)
     }
@@ -49,29 +49,29 @@ object WriteAObjectJavaInTextXML {
     var xml = scala.xml.XML.load(Source.fromFile(path))
     var className = (xml \ "@name").toString()
     var packagaName = xml \ "@package"
-    var lists = (xml \ "List") map repFieldList
-    var fields = (xml \ "Field") map repField
+    var lists = (xml \ "List") map representFieldList
+    var fields = (xml \ "Field") map representField
     var ob: A = ReflectionUtils.createClassOfType(packagaName.toString() + "." + className)
-    setFieldObj(lists, ob)
-    setFieldObj(fields, ob)
+    setterFieldObject(lists, ob)
+    setterFieldObject(fields, ob)
     return ob
   }
 
-  def repField(field: Node): RepObj[Any] = {
+  def representField(field: Node): RepObj[Any] = {
     var name = (field \ "@name").toString()
     var ty = (field \ "@type").toString()
     var taValue = field \ "Value"
     if (isHasValue(taValue)) {
       return new RepObj(name, ReflectionUtils.convertStringToClasType((taValue \ "@value").toString(), ReflectionUtils.getClassFromName(ty)))
     } else {
-      return new RepObj(name, repClassInXml((field \ "Class")))
+      return new RepObj(name, representClassInXml((field \ "Class")))
     }
   }
 
   def isHasValue(value: NodeSeq): Boolean = {
     return !(value.isEmpty)
   }
-  def repFieldList[B](list: NodeSeq): RepObj[java.util.List[Any]] = {
+  def representFieldList[B](list: NodeSeq): RepObj[java.util.List[Any]] = {
     var name = list \ "@name"
     var ty = list \ "@type"
     var values = list \ "Value"
@@ -80,7 +80,7 @@ object WriteAObjectJavaInTextXML {
     if (isHasValue(values)) {
       this.createValues(values, l)
     } else {
-      this.createObjectNoInpure(classE, l)
+      this.createObject(classE, l)
     }
     return new RepObj[java.util.List[Any]](name.toString(), l)
   }
@@ -90,21 +90,21 @@ object WriteAObjectJavaInTextXML {
       list.add((v \ "@value").toString()) // esto no esta del todo bien Reparar
     }
   }
-  def createObjectNoInpure(cl: NodeSeq, list: java.util.List[Any]) {
+  def createObject(cl: NodeSeq, list: java.util.List[Any]) {
     for (c <- cl) {
-      list.add(repClassInXml(c))
+      list.add(representClassInXml(c))
     }
   }
-  def repClassInXml[A](field: NodeSeq): Any = {
+
+  def representClassInXml[A](field: NodeSeq): Any = {
     var className = (field \ "@name").toString()
     var packageName = field \ "@package"
-    var lists = (field \ "List") map repFieldList
-    var fields = (field \ "Field") map repField
+    var lists = (field \ "List") map representFieldList
+    var fields = (field \ "Field") map representField
     var ob: Any = ReflectionUtils.createClassOfType(packageName.toString() + "." + className)
-    setFieldObj(lists, ob)
-    setFieldObj(fields, ob)
+    setterFieldObject(lists, ob)
+    setterFieldObject(fields, ob)
     return ob
   }
-
 }
 
