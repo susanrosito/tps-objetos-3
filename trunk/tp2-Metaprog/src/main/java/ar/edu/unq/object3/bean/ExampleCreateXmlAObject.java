@@ -47,14 +47,14 @@ public class ExampleCreateXmlAObject {
 		studentsOfObjects3.add(pablo);
 
 		// creo un Curso
-		Course course = new Course("Curso de : " + objects3.getName(),
+		Course course = new Course("Curso de: ",
 				studentsOfObjects3, objects3);
 
 //		WriteAObjectJavaInTextXML.writeToFile("/home/usuario/Escritorio/materia.xml", WriteAObjectJavaInTextXML.toXmlSimple(objects3).toString());
-		WriteAObjectJavaInTextXML.writeToFile("/home/usuario/Escritorio/curso.xml", WriteAObjectJavaInTextXML.toXml(course).toString());
+//		WriteAObjectJavaInTextXML.writeToFile("/home/usuario/Escritorio/curso.xml", WriteAObjectJavaInTextXML.toXml(course).toString());
 //		Object c = WriteAObjectJavaInTextXML.readXMLToObject("/home/nny/Escritorio/curso.xml");
-//		Matter m = WriteAObjectJavaInTextXML.readXMLToObject("/home/usuario/Escritorio/materia.xml");
-//		System.out.println(m);
+		Course c = WriteAObjectJavaInTextXML.readXMLToObject("/home/usuario/Escritorio/curso.xml");
+		System.out.println(c);
 //		System.out.println(m.getDescription());
 	}
 }

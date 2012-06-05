@@ -40,4 +40,9 @@ public class Course {
 	public void setMatter(Matter matter) {
 		this.matter = matter;
 	}
+	
+	@Override
+	public String toString() {
+		return this.name + this.getMatter().getName();   
+	}
 }

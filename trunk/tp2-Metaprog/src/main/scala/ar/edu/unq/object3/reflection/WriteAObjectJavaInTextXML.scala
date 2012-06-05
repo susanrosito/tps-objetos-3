@@ -13,8 +13,8 @@ object WriteAObjectJavaInTextXML {
 
   def toXml[A](ob: A): Node = {
     ob match {
-      case s: java.lang.String => <Value value={ s }> </Value>
-      case i: java.lang.Number => <Value value={ i + "" }> </Value>
+      case string: java.lang.String => <Value value={ string } type={ string.getClass().getName() }> </Value>
+      case integer: java.lang.Number => <Value value={ integer + "" } type={ integer.getClass().getName() }> </Value>
       case _ => {
         var fields = ReflectionUtils.getFields(ob)
         <Class name={ ob.getClass().getSimpleName() } package={ ob.getClass().getPackage().getName() }>
@@ -25,13 +25,12 @@ object WriteAObjectJavaInTextXML {
                   { for (value <- list) yield toXml(value) }
                 </List>
               }
-              case f => <Field name={ field.getName() } type={ field.getType().getName() }>{ toXml(f) }</Field>
+              case f => <Field name={ field.getName() }>{ toXml(f) }</Field>
             }
           }
         </Class>
       }
     }
-
   }
 
   def writeToFile(path: String, data: String) {
@@ -39,9 +38,9 @@ object WriteAObjectJavaInTextXML {
     file.text = data
   }
 
-  def setterFieldObject[A](fields: List[RepObj[A]], ob: Any) {
-    for (f <- fields) {
-      ReflectionUtils.setFieldValue(ob, f.property, f.value)
+  def setterFieldObject[A](fields: List[RepresentObject[A]], ob: Any) {
+    for (field <- fields) {
+      ReflectionUtils.setFieldValue(ob, field.property, field.value)
     }
   }
 
@@ -57,46 +56,45 @@ object WriteAObjectJavaInTextXML {
     return ob
   }
 
-  def representField(field: Node): RepObj[Any] = {
+  def representField(field: Node): RepresentObject[Any] = {
     var name = (field \ "@name").toString()
-    var ty = (field \ "@type").toString()
-    var taValue = field \ "Value"
-    if (isHasValue(taValue)) {
-      return new RepObj(name, ReflectionUtils.convertStringToClasType((taValue \ "@value").toString(), ReflectionUtils.getClassFromName(ty)))
+    var value = field \ "Value"
+    if (isHasValue(value)) {
+      return new RepresentObject(name, ReflectionUtils.convertStringToClasType((value \ "@value").toString(), ReflectionUtils.getClassFromName((value \ "@type").toString())))
     } else {
-      return new RepObj(name, representClassInXml((field \ "Class")))
+      return new RepresentObject(name, representClassOfXml((field \ "Class")))
     }
   }
 
   def isHasValue(value: NodeSeq): Boolean = {
     return !(value.isEmpty)
   }
-  def representFieldList[B](list: NodeSeq): RepObj[java.util.List[Any]] = {
+  def representFieldList[B](list: NodeSeq): RepresentObject[java.util.List[Any]] = {
     var name = list \ "@name"
     var ty = list \ "@type"
     var values = list \ "Value"
-    var classE = list \ "Class"
+    var cl = list \ "Class"
     var l: java.util.List[Any] = ReflectionUtils.createClassOfType(ty.toString())
     if (isHasValue(values)) {
       this.createValues(values, l)
     } else {
-      this.createObject(classE, l)
+      this.createObject(cl, l)
     }
-    return new RepObj[java.util.List[Any]](name.toString(), l)
+    return new RepresentObject[java.util.List[Any]](name.toString(), l)
   }
 
   def createValues(values: NodeSeq, list: java.util.List[Any]) = {
     for (v <- values) {
-      list.add((v \ "@value").toString()) // esto no esta del todo bien Reparar
+      list.add(ReflectionUtils.convertStringToClasType((v \ "@value").toString(), ReflectionUtils.getClassFromName((v \ "@type").toString())))
     }
   }
   def createObject(cl: NodeSeq, list: java.util.List[Any]) {
     for (c <- cl) {
-      list.add(representClassInXml(c))
+      list.add(representClassOfXml(c))
     }
   }
 
-  def representClassInXml[A](field: NodeSeq): Any = {
+  def representClassOfXml[A](field: NodeSeq): Any = {
     var className = (field \ "@name").toString()
     var packageName = field \ "@package"
     var lists = (field \ "List") map representFieldList
