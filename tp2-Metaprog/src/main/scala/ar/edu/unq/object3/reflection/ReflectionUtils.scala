@@ -3,6 +3,7 @@ import java.lang.Class
 import scala.collection.JavaConversions._
 import java.lang.reflect.Field
 import java.io.PrintWriter
+import scala.xml.NodeSeq
 
 object ReflectionUtils {
 
@@ -46,6 +47,13 @@ object ReflectionUtils {
     })
     return null
   }
+  
+  def createObject(field : NodeSeq) : Any = {
+    var value : String = (field \ "@value").toString()
+    var nameType : String  = (field \ "@type").toString()
+    convertStringToClasType(value, getClassFromName(nameType))
+  }
+  
   def convertStringToClasType[A](value: String, classType: Class[A]) = {
     if(classType == classOf[Integer]){
       Integer.parseInt(value)
