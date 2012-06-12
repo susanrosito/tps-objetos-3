@@ -13,11 +13,11 @@ object WriteAObjectJavaInTextXML {
 
   def toXml[A](ob: A): Node = {
     ob match {
-      case string: java.lang.String => <Value value={ string } type={ string.getClass().getName() }> </Value>
-      case integer: java.lang.Number => <Value value={ integer + "" } type={ integer.getClass().getName() }> </Value>
+      case string: java.lang.String => <Value value={ string } type={ string.getClass().getName() } enum={ EnumV.vl.toString() }> </Value>
+      case integer: java.lang.Number => <Value value={ integer + "" } type={ integer.getClass().getName() } enum={ EnumV.vl.toString() }> </Value>
       case _ => {
         var fields = ReflectionUtils.getFields(ob)
-        <Class name={ ob.getClass().getSimpleName() } package={ ob.getClass().getPackage().getName() }>
+        <Class name={ ob.getClass().getSimpleName() } package={ ob.getClass().getPackage().getName() } enum={ EnumV.cl.toString() }>
           {
             for (field <- fields) yield field.get(ob) match {
               case list: java.lang.Iterable[_] => {
@@ -46,26 +46,27 @@ object WriteAObjectJavaInTextXML {
 
   def readXMLToObject[A](path: String): A = {
     var xml = scala.xml.XML.load(Source.fromFile(path))
-    var className = (xml \ "@name").toString()
-    var packagaName = xml \ "@package"
-    var lists = (xml \ "List") map representFieldList
-    var fields = (xml \ "Field") map representField
-    var ob: A = ReflectionUtils.createClassOfType(packagaName.toString() + "." + className)
-    setterFieldObject(lists, ob)
-    setterFieldObject(fields, ob)
-    return ob
+    return this.representClassOfXml(xml)
   }
 
   def representField(field: Node): RepresentObject[Any] = {
     var name = (field \ "@name").toString()
     var value = field \ "Value"
     if (isHasValue(value)) {
-      return new RepresentObject(name, ReflectionUtils.convertStringToClasType((value \ "@value").toString(), ReflectionUtils.getClassFromName((value \ "@type").toString())))
+      return new RepresentObject(name, ReflectionUtils.createObject(value))
     } else {
       return new RepresentObject(name, representClassOfXml((field \ "Class")))
     }
   }
 
+  def representValueOrClass( valueOrClass: NodeSeq) = {
+    var enum = valueOrClass \ "@enum"
+    EnumV.withName(enum.toString()) match {
+      case EnumV.vl => ReflectionUtils.createObject(valueOrClass)
+      case EnumV.cl => representClassOfXml(valueOrClass)
+    }
+
+  }
   def isHasValue(value: NodeSeq): Boolean = {
     return !(value.isEmpty)
   }
@@ -74,32 +75,18 @@ object WriteAObjectJavaInTextXML {
     var ty = list \ "@type"
     var values = list \ "Value"
     var cl = list \ "Class"
+    var elems = values ++ cl
     var l: java.util.List[Any] = ReflectionUtils.createClassOfType(ty.toString())
-    if (isHasValue(values)) {
-      this.createValues(values, l)
-    } else {
-      this.createObject(cl, l)
-    }
+    l = elems map representValueOrClass
     return new RepresentObject[java.util.List[Any]](name.toString(), l)
   }
 
-  def createValues(values: NodeSeq, list: java.util.List[Any]) = {
-    for (v <- values) {
-      list.add(ReflectionUtils.convertStringToClasType((v \ "@value").toString(), ReflectionUtils.getClassFromName((v \ "@type").toString())))
-    }
-  }
-  def createObject(cl: NodeSeq, list: java.util.List[Any]) {
-    for (c <- cl) {
-      list.add(representClassOfXml(c))
-    }
-  }
-
-  def representClassOfXml[A](field: NodeSeq): Any = {
+  def representClassOfXml[A](field: NodeSeq): A = {
     var className = (field \ "@name").toString()
     var packageName = field \ "@package"
     var lists = (field \ "List") map representFieldList
     var fields = (field \ "Field") map representField
-    var ob: Any = ReflectionUtils.createClassOfType(packageName.toString() + "." + className)
+    var ob: A = ReflectionUtils.createClassOfType(packageName.toString() + "." + className)
     setterFieldObject(lists, ob)
     setterFieldObject(fields, ob)
     return ob
