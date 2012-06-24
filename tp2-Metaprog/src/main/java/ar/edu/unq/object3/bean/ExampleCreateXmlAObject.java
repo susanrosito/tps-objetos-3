@@ -51,9 +51,9 @@ public class ExampleCreateXmlAObject {
 				studentsOfObjects3, objects3);
 
 //		WriteAObjectJavaInTextXML.writeToFile("/home/usuario/Escritorio/materia.xml", WriteAObjectJavaInTextXML.toXmlSimple(objects3).toString());
-//		WriteAObjectJavaInTextXML.writeToFile("/home/usuario/Escritorio/curso.xml", WriteAObjectJavaInTextXML.toXml(course).toString());
+//		WriteAObjectJavaInTextXML.writeToFile("/home/nny/Escritorio/curso.xml", WriteAObjectJavaInTextXML.toXml(course).toString());
 //		Object c = WriteAObjectJavaInTextXML.readXMLToObject("/home/nny/Escritorio/curso.xml");
-		Course c = WriteAObjectJavaInTextXML.readXMLToObject("/home/usuario/Escritorio/curso.xml");
+		Course c = WriteAObjectJavaInTextXML.readXMLToObject("/home/nny/Escritorio/curso.xml");
 		System.out.println("Objecto curso: " + c );
 		System.out.println("Materia del curso: " + c.getMatter());
 		System.out.println("Nombre de la materia: " + c.getMatter().getName());
@@ -61,6 +61,10 @@ public class ExampleCreateXmlAObject {
 		System.out.println("Creditos de la materia: " +c.getMatter().getCredits());
 		System.out.println("Temas de la materia: " +c.getMatter().getIssues());
 		System.out.println("Estudiantes del Curso: " +c.getStudents());
+		System.out.println("nombre del first Estudiantes : " +c.getStudents().get(0).getName());
+		System.out.println("apellido del first Estudiantes : " +c.getStudents().get(0).getLastName());
+		System.out.println("edad del first Estudiantes : " +c.getStudents().get(0).getAge());
+		System.out.println("legajo del firts Estudiantes : " +c.getStudents().get(0).getDocket());
 //		System.out.println(m.getDescription());
 	}
 }
