@@ -47,20 +47,20 @@ object ReflectionUtils {
     })
     return null
   }
-  
-  def createObject(field : NodeSeq) : Any = {
-    var value : String = (field \ "@value").toString()
-    var nameType : String  = (field \ "@type").toString()
+
+  def createObject(field: NodeSeq): Any = {
+    var value: String = (field \ "@value").toString()
+    var nameType: String = (field \ "@type").toString()
     convertStringToClasType(value, getClassFromName(nameType))
   }
-  
+
   def convertStringToClasType[A](value: String, classType: Class[A]) = {
-    if(classType == classOf[Integer]){
+    if (classType == classOf[Integer]) {
       Integer.parseInt(value)
-    }else if(classType == classOf[String]){
+    } else if (classType == classOf[String]) {
       value
-    }else{
-    	null.asInstanceOf[A]
+    } else {
+      null.asInstanceOf[A]
     }
   }
 }
